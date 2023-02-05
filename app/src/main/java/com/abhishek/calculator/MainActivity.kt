@@ -113,7 +113,9 @@ class MainActivity : AppCompatActivity(), OnClickListener {
         val buttonText = button?.text.toString()
         var dataToCalculate = clearSolutionFirstZero(solutionTV.text.toString())
 
-       dataToCalculate = ensureTwoOperatorsAreNotPresentConsecutively(dataToCalculate, buttonText)
+        dataToCalculate = ensureTwoOperatorsAreNotPresentConsecutively(dataToCalculate, buttonText)
+        dataToCalculate = ensureTwoDotOperatorsAreNotPresentConsecutively(dataToCalculate, buttonText)
+        // TODO("Two dot operators should not be allowed in one numbers")
 
         when (buttonText) {
             "AC" -> textViewHandler.clearView()
@@ -126,13 +128,27 @@ class MainActivity : AppCompatActivity(), OnClickListener {
         }
     }
 
+    private fun ensureTwoDotOperatorsAreNotPresentConsecutively(dataToCalculate: String, buttonText: String): String {
+        val length: Int = solutionTV.text.toString().length
+        if (length != 0) {
+            val lastNMinus1Character: String =
+                solutionTV.text.toString().elementAt(length - 1).toString()
+            if (lastNMinus1Character == "." && buttonText == ".") {
+                clearLastCharacterFromSolutionTV()
+                return dataToCalculate.substring(0, length - 1)
+            }
+        }
+        return dataToCalculate
+    }
+
     private fun ensureTwoOperatorsAreNotPresentConsecutively(
         dataToCalculate: String,
         buttonText: String
     ): String {
         val length: Int = solutionTV.text.toString().length
         if (length != 0) {
-            val lastNMinus1Character: String = solutionTV.text.toString().elementAt(length - 1).toString()
+            val lastNMinus1Character: String =
+                solutionTV.text.toString().elementAt(length - 1).toString()
             if (isCalculatorOperator(lastNMinus1Character) && isCalculatorOperator(buttonText)) {
                 clearLastCharacterFromSolutionTV()
                 return dataToCalculate.substring(0, length - 1)
