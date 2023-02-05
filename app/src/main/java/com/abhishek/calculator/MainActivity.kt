@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.View.OnClickListener
 import android.widget.TextView
+import com.abhishek.calculator.Opeator.isCalculatorOperator
 import com.google.android.material.button.MaterialButton
 
 class MainActivity : AppCompatActivity(), OnClickListener {
@@ -31,13 +32,15 @@ class MainActivity : AppCompatActivity(), OnClickListener {
     private lateinit var button9: MaterialButton
     private lateinit var buttonAC: MaterialButton
     private lateinit var buttonDot: MaterialButton
+    private lateinit var calculate: Calculate
+    private lateinit var textViewHandler: TextViewHandler
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         assignId()
-
-
+        textViewHandler = TextViewHandler(solutionTV, resultTV)
+        calculate = Calculate(this, resultTV, solutionTV)
     }
 
     fun assignId() {
@@ -58,7 +61,6 @@ class MainActivity : AppCompatActivity(), OnClickListener {
 
         buttonMultiply = findViewById(R.id.button_multiply)
         buttonMultiply.setOnClickListener(this)
-
 
         buttonPlus = findViewById(R.id.button_plus)
         buttonPlus.setOnClickListener(this)
@@ -107,9 +109,53 @@ class MainActivity : AppCompatActivity(), OnClickListener {
     }
 
     override fun onClick(v: View?) {
-        var button: MaterialButton? = v as MaterialButton?
+        val button: MaterialButton? = v as MaterialButton?
+        val buttonText = button?.text.toString()
+        var dataToCalculate = clearSolutionFirstZero(solutionTV.text.toString())
 
-        var buttonText = button?.text.toString()
-        solutionTV.text = buttonText
+       dataToCalculate = ensureTwoOperatorsAreNotPresentConsecutively(dataToCalculate, buttonText)
+
+        when (buttonText) {
+            "AC" -> textViewHandler.clearView()
+            "C" -> clearLastCharacterFromSolutionTV()
+            "=" -> calculate.calculate(dataToCalculate)
+            else -> {
+                dataToCalculate += buttonText
+                solutionTV.text = dataToCalculate
+            }
+        }
     }
+
+    private fun ensureTwoOperatorsAreNotPresentConsecutively(
+        dataToCalculate: String,
+        buttonText: String
+    ): String {
+        val length: Int = solutionTV.text.toString().length
+        if (length != 0) {
+            val lastNMinus1Character: String = solutionTV.text.toString().elementAt(length - 1).toString()
+            if (isCalculatorOperator(lastNMinus1Character) && isCalculatorOperator(buttonText)) {
+                clearLastCharacterFromSolutionTV()
+                return dataToCalculate.substring(0, length - 1)
+            }
+        }
+        return dataToCalculate
+    }
+
+    private fun clearLastCharacterFromSolutionTV() {
+        val length: Int = solutionTV.text.toString().length
+        if (length != 0) {
+            val lastNMinus1Character: String =
+                solutionTV.text.toString().substring(0, solutionTV.text.toString().length - 1)
+            textViewHandler.setSolutionTextView(lastNMinus1Character)
+        }
+    }
+
+    private fun clearSolutionFirstZero(dataToCalculate: String): String {
+        if (dataToCalculate == "0") {
+            return ""
+        }
+        return dataToCalculate
+    }
+
+
 }
